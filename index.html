@@ -21,13 +21,14 @@
   <div class="top"><div class="brand">J.A.R.V.I.S.</div><div class="status">LOCAL PROTOTYPE</div></div>
   <div class="greeting"><small>Persönlicher Assistent</small><h1>Hallo, Boss.</h1><p>Bereit. Was soll ich für dich tun?</p></div>
   <div class="core"><div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div><div class="orb"></div><div class="corelabel">SYSTEM ONLINE</div></div>
-  <button class="talk" id="talk">🎙️ Mit JARVIS sprechen</button>
+  
   <div class="card"><div class="cardtitle">KOMMUNIKATION</div><div class="chat" id="chat">„Bereit, Boss. Sag mir etwas.“</div><div class="inputrow"><input id="input" placeholder="Schreib JARVIS etwas …"><button class="send" id="send">Senden</button></div></div>
   <div class="grid"><div class="tile"><b>🕐 Uhr</b><span id="clock">--:--</span></div><div class="tile"><b>📋 Aufgaben</b><span id="tasks">Noch keine</span></div><div class="tile"><b>👁️ Vision</b><span>Kamera später</span></div><div class="tile"><b>🧠 Gedächtnis</b><span>Lokaler Speicher</span></div></div>
   <div class="footer">JARVIS Prototype • keine externe KI • keine API</div>
 </div>
 <script>
 const chat=document.getElementById('chat'), input=document.getElementById('input');
+
 function reply(text){
   const t=text.toLowerCase();
   let r='Verstanden, Boss. Im Prototypen kann ich diese Aufgabe noch nicht ausführen.';
@@ -38,15 +39,83 @@ function reply(text){
   chat.textContent='„'+r+'“';
   try{speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(r))}catch(e){}
 }
+
 document.getElementById('send').onclick=()=>{if(input.value.trim()){reply(input.value.trim());input.value=''}};
 input.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('send').click()});
-function clock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}clock();setInterval(clock,1000);
+
+function clock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}
+clock();setInterval(clock,1000);
+
+
 const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-document.getElementById('talk').onclick=()=>{
- if(!SpeechRecognition){chat.textContent='„Die Sprachaufnahme ist in diesem Browser noch nicht verfügbar. Nutze unten das Textfeld.“';return}
- const rec=new SpeechRecognition();rec.lang='de-DE';rec.interimResults=false;rec.maxAlternatives=1;
- chat.textContent='„Ich höre zu …“';rec.onresult=e=>reply(e.results[0][0].transcript);rec.onerror=()=>chat.textContent='„Ich konnte dich nicht hören. Versuch es bitte nochmal.“';rec.start();
-};
+let listening=false;
+
+function startJarvisListening(){
+  if(!SpeechRecognition){
+    chat.textContent='„Spracherkennung wird von diesem Browser nicht unterstützt.“';
+    return;
+  }
+  if(listening) return;
+  listening=true;
+
+  const rec=new SpeechRecognition();
+  rec.lang='de-DE';
+  rec.interimResults=false;
+  rec.continuous=false;
+  rec.maxAlternatives=3;
+
+  chat.textContent='„Ich höre zu, Boss …“';
+
+  rec.onresult=e=>{
+    const heard=e.results[0][0].transcript.trim();
+    const lower=heard.toLowerCase();
+
+    if(!lower.includes('jarvis')){
+      listening=false;
+      setTimeout(startJarvisListening,400);
+      return;
+    }
+
+    let command=heard.replace(/hey\s*jarvis/ig,'').replace(/jarvis/ig,'').trim();
+
+    if(!command){
+      chat.textContent='„Ja, Boss?“';
+      listening=false;
+      setTimeout(startJarvisListening,500);
+      return;
+    }
+
+    chat.textContent='„'+command+'“';
+
+    window.location.href=
+      'shortcuts://run-shortcut?name='+
+      encodeURIComponent('Textabsicht erkennen')+
+      '&input=text&text='+
+      encodeURIComponent(command);
+
+    listening=false;
+  };
+
+  rec.onerror=()=>{
+    listening=false;
+    setTimeout(startJarvisListening,1200);
+  };
+
+  rec.onend=()=>{
+    if(listening){
+      listening=false;
+      setTimeout(startJarvisListening,400);
+    }
+  };
+
+  try{ rec.start(); }catch(e){ listening=false; }
+}
+
+/* Beim Öffnen automatisch auf das Aktivierungswort warten. */
+window.addEventListener('load',()=>{
+  chat.textContent='„Bereit. Sag: Hey JARVIS …“';
+  setTimeout(startJarvisListening,800);
+});
 </script>
 </body>
 </html>
