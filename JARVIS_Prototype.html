@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070b">
+<title>JARVIS Prototype</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;background:#05070b;color:#eef7ff}body{overflow-x:hidden}
+.app{min-height:100vh;padding:28px 18px 30px;position:relative;background:radial-gradient(circle at 50% 22%,#0b2c3e 0,#07121a 25%,#05070b 58%)}
+.top{display:flex;justify-content:space-between;align-items:center}.brand{letter-spacing:4px;font-weight:700;font-size:15px;color:#b9ecff}.status{font-size:12px;color:#65e4ff}.status:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#52e6ff;box-shadow:0 0 12px #52e6ff;margin-right:7px}
+.greeting{margin-top:36px}.greeting small{color:#7e9aaa}.greeting h1{font-size:30px;margin:5px 0;font-weight:700}.greeting p{color:#91a6b2;margin:0}
+.core{height:250px;display:flex;align-items:center;justify-content:center;position:relative;margin:5px 0}.ring{position:absolute;border:1px solid rgba(76,220,255,.35);border-radius:50%;animation:spin 12s linear infinite}.r1{width:190px;height:190px;border-left-color:#56e8ff;border-right-color:transparent}.r2{width:145px;height:145px;border-top-color:#56e8ff;border-bottom-color:transparent;animation-direction:reverse;animation-duration:7s}.r3{width:105px;height:105px;border:2px solid rgba(86,232,255,.5);box-shadow:0 0 35px rgba(86,232,255,.18)}.orb{width:72px;height:72px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#7beeff 20%,#1597c6 48%,#07131a 75%);box-shadow:0 0 28px #24cfff,0 0 75px rgba(36,207,255,.35);animation:pulse 2.2s ease-in-out infinite}.corelabel{position:absolute;bottom:0;letter-spacing:3px;font-size:11px;color:#72dfff}
+@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{50%{transform:scale(1.08);box-shadow:0 0 40px #24cfff,0 0 95px rgba(36,207,255,.45)}}
+.talk{width:100%;border:1px solid #28c9ef;background:linear-gradient(135deg,#0d2936,#09202b);color:#eaffff;border-radius:18px;padding:17px;font-size:17px;font-weight:600;box-shadow:0 0 25px rgba(32,201,239,.14)}.talk:active{transform:scale(.98)}
+.card{margin-top:16px;background:rgba(9,18,24,.78);border:1px solid rgba(117,170,190,.18);border-radius:18px;padding:15px}.cardtitle{font-size:12px;letter-spacing:2px;color:#6edfff;margin-bottom:10px}.chat{min-height:80px;color:#c8d6dd;font-size:15px;line-height:1.45}.inputrow{display:flex;gap:8px;margin-top:12px}.inputrow input{min-width:0;flex:1;background:#071016;border:1px solid #1b3945;border-radius:12px;color:white;padding:13px;font-size:15px;outline:none}.send{border:1px solid #2abedc;background:#0b2630;color:#dffaff;border-radius:12px;padding:0 16px;font-weight:700}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.tile{background:rgba(9,18,24,.72);border:1px solid rgba(117,170,190,.15);border-radius:15px;padding:14px}.tile b{display:block;font-size:14px}.tile span{display:block;color:#8297a2;font-size:12px;margin-top:5px}.footer{text-align:center;color:#4d6873;font-size:10px;margin-top:22px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top"><div class="brand">J.A.R.V.I.S.</div><div class="status">LOCAL PROTOTYPE</div></div>
+  <div class="greeting"><small>Persönlicher Assistent</small><h1>Hallo, Boss.</h1><p>Bereit. Was soll ich für dich tun?</p></div>
+  <div class="core"><div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div><div class="orb"></div><div class="corelabel">SYSTEM ONLINE</div></div>
+  <button class="talk" id="talk">🎙️ Mit JARVIS sprechen</button>
+  <div class="card"><div class="cardtitle">KOMMUNIKATION</div><div class="chat" id="chat">„Bereit, Boss. Sag mir etwas.“</div><div class="inputrow"><input id="input" placeholder="Schreib JARVIS etwas …"><button class="send" id="send">Senden</button></div></div>
+  <div class="grid"><div class="tile"><b>🕐 Uhr</b><span id="clock">--:--</span></div><div class="tile"><b>📋 Aufgaben</b><span id="tasks">Noch keine</span></div><div class="tile"><b>👁️ Vision</b><span>Kamera später</span></div><div class="tile"><b>🧠 Gedächtnis</b><span>Lokaler Speicher</span></div></div>
+  <div class="footer">JARVIS Prototype • keine externe KI • keine API</div>
+</div>
+<script>
+const chat=document.getElementById('chat'), input=document.getElementById('input');
+function reply(text){
+  const t=text.toLowerCase();
+  let r='Verstanden, Boss. Im Prototypen kann ich diese Aufgabe noch nicht ausführen.';
+  if(t.includes('hallo')||t.includes('hi')) r='Hallo, Boss. Schön, dich zu sehen.';
+  else if(t.includes('wie geht')) r='Systeme laufen. Ich bin bereit.';
+  else if(t.includes('zeit')||t.includes('uhr')) r='Boss, es ist '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+'.';
+  else if(t.includes('wer bist')) r='Ich bin JARVIS – dein persönlicher KI-Prototyp.';
+  chat.textContent='„'+r+'“';
+  try{speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(r))}catch(e){}
+}
+document.getElementById('send').onclick=()=>{if(input.value.trim()){reply(input.value.trim());input.value=''}};
+input.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('send').click()});
+function clock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}clock();setInterval(clock,1000);
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+document.getElementById('talk').onclick=()=>{
+ if(!SpeechRecognition){chat.textContent='„Die Sprachaufnahme ist in diesem Browser noch nicht verfügbar. Nutze unten das Textfeld.“';return}
+ const rec=new SpeechRecognition();rec.lang='de-DE';rec.interimResults=false;rec.maxAlternatives=1;
+ chat.textContent='„Ich höre zu …“';rec.onresult=e=>reply(e.results[0][0].transcript);rec.onerror=()=>chat.textContent='„Ich konnte dich nicht hören. Versuch es bitte nochmal.“';rec.start();
+};
+</script>
+</body>
+</html>
