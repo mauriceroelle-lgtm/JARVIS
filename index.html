@@ -40,7 +40,7 @@ function reply(text){
   try{speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(r))}catch(e){}
 }
 
-document.getElementById('send').onclick=()=>{if(input.value.trim()){reply(input.value.trim());input.value=''}};
+document.getElementById('send').onclick=()=>{const t=input.value.trim();if(t){window.location.href='shortcuts://run-shortcut?name='+encodeURIComponent('Textabsicht erkennen')+'&input=text&text='+encodeURIComponent(t);input.value=''}};
 input.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('send').click()});
 
 function clock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}
